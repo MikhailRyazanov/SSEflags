@@ -2,14 +2,13 @@
 
 NumPy for x86 platforms (IA-32 and AMD64 architectures) uses SSE and/or AVX for
 floating-point calculations. Unfortunately, on Intel CPUs, they work very
-slowly with [subnormal (denormal)
-numbers](https://en.wikipedia.org/wiki/Subnormal_number). To avoid such
-performance degradation, if somewhat worse floating-point accuracy in extreme
-cases can be tolerated, the [DAZ (denormals-are-zero) and FTZ (flush-to-zero)
-CPU flags](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/
-developer-guide-reference/2025-2/set-the-ftz-and-daz-flags.html) were
-introduced to treat input and/or output subnormal numbers as zeros. This module
-provides access to these CPU flags from Python.
+slowly with
+[subnormal (denormal) numbers](https://en.wikipedia.org/wiki/Subnormal_number).
+To avoid such performance degradation, if somewhat worse floating-point
+accuracy in extreme cases can be tolerated, the
+[DAZ (denormals-are-zero) and FTZ (flush-to-zero) CPU flags](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2025-2/set-the-ftz-and-daz-flags.html)
+were introduced to treat input and/or output subnormal numbers as zeros. This
+module provides access to these CPU flags from Python.
 
 To test the effect on your system, use ``sseflags.benchmark.run()`` or run
 ```
