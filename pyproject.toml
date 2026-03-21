@@ -1,0 +1,44 @@
+[project]
+name = "sseflags"
+description = "Python package for accessing DAZ and FTZ flags"
+readme = "README.md"
+requires-python = ">= 3.10"
+license = "MIT"
+authors = [{name = "Mikhail Ryazanov"}]
+keywords = ["SSE", "AVX", "subnormal", "denormal"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dynamic = ["version"]  # __version__ from sseflags/__init__.py
+
+[project.urls]
+homepage = "https://github.com/MikhailRyazanov/SSEflags"
+documentation = "https://github.com/MikhailRyazanov/SSEflags/README.md"
+github = "https://github.com/MikhailRyazanov/SSEflags.git"
+issues = "https://github.com/MikhailRyazanov/SSEflags/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0", "cython >= 3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sseflags"]
+
+[tool.cibuildwheel]
+environment.FORCE_COLOR = 1
+environment.PIP_PROGRESS_BAR = "off"
+test-requires = "abi3audit"
+test-command = "python -m abi3audit -v --summary {wheel}"
+
+[tool.cibuildwheel.linux]
+archs = ["i686", "x86_64"]
+
+[tool.cibuildwheel.windows]
+archs = ["x86", "AMD64"]
