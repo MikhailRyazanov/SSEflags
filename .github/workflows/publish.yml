@@ -1,0 +1,40 @@
+name: Publish to (Test)PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Test publishing to TestPyPI'
+        type: choice
+        options:
+        - 'yes'
+        - 'no'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # required for Trusted Publishing
+    env:
+      # TEST_REPOSITORY or DEFAULT_REPOSITORY from pypa/twine/twine/utils.py
+      PYPI_URL: >-
+        ${{ inputs.test == 'yes' &&
+            'https://test.pypi.org/legacy/' ||
+            'https://upload.pypi.org/legacy/' }}
+    steps:
+    - name: Download last built sdist and wheels
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh run download -R '${{ github.repository }}' \
+                        -n 'noarch(${{ github.ref_name }})' \
+                        -p 'wheels(${{ github.ref_name }})*'
+        mkdir dist
+        cp -v -t dist noarch\(*/* wheels\(*/*
+        ls -Al dist
+    - name: Publish to ${{ env.PYPI_URL }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: ${{ env.PYPI_URL }}
+        verbose: true
