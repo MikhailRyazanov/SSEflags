@@ -64,7 +64,10 @@ module only reports that it has no effect.
 ## ``sseflags`` module
 
 ```
-get_flags()
+type Flags = {'daz': bool | None, 'ftz': bool | None}
+
+
+get_flags() -> sseflags.Flags
     Query current states of the DAZ and FTZ flags, see set_flags() for details.
     Can be used for restoring the default behavior:
 
@@ -81,7 +84,11 @@ get_flags()
         implemented
 
 
-set_flags(daz=None, ftz=None, verbose=False)
+set_flags(
+    daz: bool | None = None,
+    ftz: bool | None = None,
+    verbose: bool = False
+) -> bool
     Set the DAZ (denormals-are-zero) and/or FTZ (flush-to-zero) CPU flags for
     SSE and AVX floating-point calculations, which can be useful for Intel CPUs
     that work very slowly with subnormal (denormal) numbers.
@@ -112,7 +119,7 @@ set_flags(daz=None, ftz=None, verbose=False)
 ### ``sseflags.benchmark`` submodule
 
 ```
-run(repeat=100, min_t=1.0, verbose=True)
+run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None
     Run benchmarks with all possible combinations of the DAZ and FTZ flags to
     check their effect on NumPy performance (see run_flags() for details).
 
@@ -128,7 +135,11 @@ run(repeat=100, min_t=1.0, verbose=True)
         pass False to suppress the progress report
 
 
-run_flags(flags, repeat=100, min_t=1.0)
+run_flags(
+    flags: Union[sseflags.Flags, Literal['default', 'normal']],
+    repeat: int = 100,
+    min_t: float = 1.0
+) -> float
     Set the DAZ and FTZ flags to given states and run a benchmark of NumPy
     matrix multiplication. Each iteration involves multiplication of normal
     numbers that would produce subnormal numbers and multiplication of

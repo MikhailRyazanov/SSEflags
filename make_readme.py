@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pydoc import plaintext, render_doc
 
-from sseflags import get_flags, set_flags
+from sseflags import get_flags, set_flags, Flags
 from sseflags.benchmark import run, run_flags
 
 
@@ -79,6 +79,9 @@ module only reports that it has no effect.
 ## ``sseflags`` module
 
 ```
+type Flags = {Flags.__annotations__}
+
+
 {doc(get_flags)}
 
 

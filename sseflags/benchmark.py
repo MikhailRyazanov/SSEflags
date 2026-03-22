@@ -1,13 +1,14 @@
 from itertools import count
 from sys import float_info
 from time import time
+from typing import Any, Literal
 
 import numpy as np
 
-from . import set_flags, get_flags
+from . import set_flags, get_flags, Flags
 
 
-def run(repeat=100, min_t=1.0, verbose=True):
+def run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None:
     """
     Run benchmarks with all possible combinations of the DAZ and FTZ flags to
     check their effect on NumPy performance (see run_flags() for details).
@@ -23,18 +24,19 @@ def run(repeat=100, min_t=1.0, verbose=True):
     verbose : bool, optional
         pass False to suppress the progress report
     """
-    def vprint(*args, **kwargs):
+    def vprint(*args: Any, **kwargs: Any) -> None:
         if verbose:
             print(*args, **kwargs, flush=True)
 
-    res = {}
+    ResKey = str | tuple[bool, bool]
+    res: dict[ResKey, float] = {}
 
     vprint('Running normal...', end='')
-    res['normal',] = run_flags('normal', repeat=repeat, min_t=min_t)
+    res['normal'] = run_flags('normal', repeat=repeat, min_t=min_t)
     vprint(' done.')
 
     vprint(f'Running default {get_flags()}...', end='')
-    res['default',] = run_flags('default', repeat=repeat, min_t=min_t)
+    res['default'] = run_flags('default', repeat=repeat, min_t=min_t)
     vprint(' done.')
 
     if not set_flags():
@@ -42,7 +44,7 @@ def run(repeat=100, min_t=1.0, verbose=True):
     else:
         for daz, ftz in [(False, False), (False, True),
                          (True, False), (True, True)]:
-            flags = {'daz': daz, 'ftz': ftz}
+            flags: Flags = {'daz': daz, 'ftz': ftz}
             vprint(f'Running {flags}...', end='')
             res[daz, ftz] = run_flags(flags, repeat=repeat, min_t=min_t)
             vprint(' done.')
@@ -55,8 +57,8 @@ def run(repeat=100, min_t=1.0, verbose=True):
         prefix = 'milli'
         factor = 1e3
 
-    def fmt(*args):
-        return f'{res[*args] * factor:6.3f}'
+    def fmt(key: ResKey) -> str:
+        return f'{res[key] * factor:6.3f}'
 
     print(f'Times in {prefix}seconds:')
     print(f'normal    {fmt("normal")}')
@@ -65,12 +67,13 @@ def run(repeat=100, min_t=1.0, verbose=True):
         print('=' * 24)
         print('         FTZ off  FTZ on')
         print('-' * 24)
-        print(f'DAZ off   {fmt(False, False)}  {fmt(False, True)}')
-        print(f'DAZ on    {fmt(True, False)}  {fmt(True, True)}')
+        print(f'DAZ off   {fmt((False, False))}  {fmt((False, True))}')
+        print(f'DAZ on    {fmt((True, False))}  {fmt((True, True))}')
         print('=' * 24)
 
 
-def run_flags(flags, repeat=100, min_t=1.0):
+def run_flags(flags: Flags | Literal['default',  'normal'],
+              repeat: int = 100, min_t: float = 1.0) -> float:
     """
     Set the DAZ and FTZ flags to given states and run a benchmark of NumPy
     matrix multiplication. Each iteration involves multiplication of normal

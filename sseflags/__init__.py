@@ -1,3 +1,4 @@
+from typing import TypedDict
 try:
     from ._lib import _get_daz, _get_ftz, _set_daz, _set_ftz
     _ext = True
@@ -6,8 +7,11 @@ except ImportError:
 
 __version__ = '0.1'
 
+Flags = TypedDict('Flags', {'daz': bool | None, 'ftz': bool | None},
+                  total=False)
 
-def get_flags():
+
+def get_flags() -> Flags:
     """
     Query current states of the DAZ and FTZ flags, see set_flags() for details.
     Can be used for restoring the default behavior:
@@ -24,14 +28,15 @@ def get_flags():
         corresponding flag state: True for set, False for cleared, None if not
         implemented
     """
-    flags = {'daz': None, 'ftz': None}
+    flags: Flags = {'daz': None, 'ftz': None}
     if _ext:
         flags['daz'] = _get_daz()
         flags['ftz'] = _get_ftz()
     return flags
 
 
-def set_flags(daz=None, ftz=None, verbose=False):
+def set_flags(daz: bool | None = None, ftz: bool | None = None,
+              verbose: bool = False) -> bool:
     """
     Set the DAZ (denormals-are-zero) and/or FTZ (flush-to-zero) CPU flags for
     SSE and AVX floating-point calculations, which can be useful for Intel CPUs
