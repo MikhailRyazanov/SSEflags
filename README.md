@@ -29,7 +29,30 @@ very slow):
 
 AMD CPUs do not show performance degradation on subnormal numbers in the 64-bit
 mode, and thus enabling DAZ/FTZ can only decrease the accuracy slightly.
-Nevertheless, DAZ/FTZ might be useful in 32-bit Python.
+Example benchmarks on AMD Ryzen 7 6800U (negligible degradation for subnormal
+numbers; notice that times are in *micro*seconds):
+```
+    Times in microseconds:
+    default   16.834
+    ========================
+             FTZ off  FTZ on
+    ------------------------
+    DAZ off   16.829  15.383
+    DAZ on    15.353  14.500
+    ========================
+```
+Nevertheless, DAZ/FTZ might be useful in 32-bit Python (same CPU, noticeable
+difference):
+```
+    Times in milliseconds:
+    default    0.229
+    ========================
+             FTZ off  FTZ on
+    ------------------------
+    DAZ off    0.225   0.131
+    DAZ on     0.224   0.131
+    ========================
+```
 
 On other architectures, or if the underlying Cython extension is not built, the
 module only reports that it has no effect.
