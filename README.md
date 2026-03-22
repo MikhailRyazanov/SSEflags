@@ -18,6 +18,7 @@ in the command line. Example output on Intel i9-12900K (subnormal numbers are
 very slow):
 ```
     Times in milliseconds:
+    normal     0.037
     default    1.979
     ========================
              FTZ off  FTZ on
@@ -33,6 +34,7 @@ Example benchmarks on AMD Ryzen 7 6800U (negligible degradation for subnormal
 numbers; notice that times are in *micro*seconds):
 ```
     Times in microseconds:
+    normal    14.434
     default   16.834
     ========================
              FTZ off  FTZ on
@@ -45,6 +47,7 @@ Nevertheless, DAZ/FTZ might be useful in 32-bit Python (same CPU, noticeable
 difference):
 ```
     Times in milliseconds:
+    normal     0.132
     default    0.229
     ========================
              FTZ off  FTZ on
@@ -137,8 +140,17 @@ run_flags(flags, repeat=100, min_t=1.0)
 
     Parameters
     ----------
-    flags : dict
-        dictionary with arguments passed to sseflags.set_flags()
+    flags : dict or str
+        dictionary with arguments passed to sseflags.set_flags() after creating
+        subnormal test data;
+
+        flags='default' benchmark without changing the flags (thus test data
+        might be missing subnormal numbers, which corresponds to running
+        self-contained calculations but does not represent calculations with
+        external data);
+
+        flags='normal' benchmark normal numbers for reference (should not
+        depend on the flags)
 
     repeat : int, optional
         number of iterations in a batch
@@ -158,6 +170,7 @@ Compiled wheels for Linux, macOS and Windows can be installed
 [from PyPI](https://pypi.org/project/sseflags).
 They use [“Stable ABI”](https://docs.python.org/3/c-api/stable.html#stable-abi)
 that should be compatible with all Python versions ⩾3.10. For portability, a
-“universal wheel” is also available. It does not contain the Cython extension,
-and thus has no effect on computations, but can be installed on unsupported
-systems.
+“universal wheel” is also available, which does not contain the Cython
+extension, and thus has no effect on computations, but can be installed on
+unsupported systems. It can still benchmark the performance difference between
+subnormal and normal numbers.

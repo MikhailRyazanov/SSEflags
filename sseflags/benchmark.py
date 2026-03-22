@@ -23,27 +23,30 @@ def run(repeat=100, min_t=1.0, verbose=True):
     verbose : bool, optional
         pass False to suppress the progress report
     """
-    def vprint(*args):
+    def vprint(*args, **kwargs):
         if verbose:
-            print(*args)
+            print(*args, **kwargs, flush=True)
 
-    flags = get_flags()
-    vprint(f'Default: {flags}.')
+    res = {}
+
+    vprint('Running normal...', end='')
+    res['normal',] = run_flags('normal', repeat=repeat, min_t=min_t)
+    vprint(' done.')
+
+    vprint(f'Running default {get_flags()}...', end='')
+    res['default',] = run_flags('default', repeat=repeat, min_t=min_t)
+    vprint(' done.')
 
     if not set_flags():
         print('Setting DAZ/FTZ is not implemented.')
-        return
-
-    res = {}
-    for daz, ftz in [(None, None),
-                     (False, False), (False, True),
-                     (True, False), (True, True)]:
-        res[daz, ftz] = run_flags({'daz': daz, 'ftz': ftz},
-                                  repeat=repeat, min_t=min_t)
-        vprint(f'Done {get_flags()}.')
-
-    set_flags(**flags)
-    vprint(f'Restored: {get_flags()}.\n')
+    else:
+        for daz, ftz in [(False, False), (False, True),
+                         (True, False), (True, True)]:
+            flags = {'daz': daz, 'ftz': ftz}
+            vprint(f'Running {flags}...', end='')
+            res[daz, ftz] = run_flags(flags, repeat=repeat, min_t=min_t)
+            vprint(' done.')
+    vprint('')
 
     if max(res.values()) < 100e-6:
         prefix = 'micro'
@@ -52,17 +55,19 @@ def run(repeat=100, min_t=1.0, verbose=True):
         prefix = 'milli'
         factor = 1e3
 
-    def fmt(daz, ftz):
-        return f'{res[(daz, ftz)] * factor:6.3f}'
+    def fmt(*args):
+        return f'{res[*args] * factor:6.3f}'
 
     print(f'Times in {prefix}seconds:')
-    print(f'default   {fmt(None, None)}')
-    print('=' * 24)
-    print('         FTZ off  FTZ on')
-    print('-' * 24)
-    print(f'DAZ off   {fmt(False, False)}  {fmt(False, True)}')
-    print(f'DAZ on    {fmt(True, False)}  {fmt(True, True)}')
-    print('=' * 24)
+    print(f'normal    {fmt("normal")}')
+    print(f'default   {fmt("default")}')
+    if (True, True) in res:
+        print('=' * 24)
+        print('         FTZ off  FTZ on')
+        print('-' * 24)
+        print(f'DAZ off   {fmt(False, False)}  {fmt(False, True)}')
+        print(f'DAZ on    {fmt(True, False)}  {fmt(True, True)}')
+        print('=' * 24)
 
 
 def run_flags(flags, repeat=100, min_t=1.0):
@@ -78,8 +83,17 @@ def run_flags(flags, repeat=100, min_t=1.0):
 
     Parameters
     ----------
-    flags : dict
-        dictionary with arguments passed to sseflags.set_flags()
+    flags : dict or str
+        dictionary with arguments passed to sseflags.set_flags() after creating
+        subnormal test data;
+
+        flags='default' benchmark without changing the flags (thus test data
+        might be missing subnormal numbers, which corresponds to running
+        self-contained calculations but does not represent calculations with
+        external data);
+
+        flags='normal' benchmark normal numbers for reference (should not
+        depend on the flags)
 
     repeat : int, optional
         number of iterations in a batch
@@ -92,28 +106,40 @@ def run_flags(flags, repeat=100, min_t=1.0):
     time : float
         average time per iteration in seconds
     """
-    if None not in flags:
-        # to ensure that subnormal test data can be created
-        set_flags(daz=False, ftz=False)
+    orig_flags = get_flags()
 
     # Python "float" (= NumPy "float64" = C "double" = IEEE 754 "binary64")
     # numbers below 2**float_info.min_exp are subnormal and span
-    # float_info.mant_dig binary orders of magnitude, thus:
-    # A consists of normal elements, whose products would be subnormal,
-    # B consists of subnormal elements
+    # float_info.mant_dig binary orders of magnitude
     x = np.arange(float_info.mant_dig)
-    A = 2.0**(float_info.min_exp / 2 - (x + x[:, None]) / 2)
-    B = 2.0**(float_info.min_exp - (x + x[:, None]) / 2)
+    xx = (x + x[:, None]) / 2
+    if flags == 'normal':
+        A = 2.0**(-xx)
+        B = -A
+    else:
+        if flags != 'default':
+            # to ensure that subnormal test data can be created
+            set_flags(daz=False, ftz=False)
+        # A consists of normal elements, whose products would be subnormal,
+        # A.dot(A) would be sum(normal * normal = subnormal) = subnormal
+        A = 2.0**(float_info.min_exp / 2 - xx)
+        # B consists of subnormal elements
+        # B.dot(C) would be sum(subnormal * 1.0 = subnormal) = subnormal
+        B = 2.0**(float_info.min_exp - xx)
+        if flags != 'default':
+            set_flags(**flags)
     C = np.ones_like(B)
 
-    set_flags(**flags)
     t0 = time()
     for i in count(1):
         for _ in range(repeat):
-            A.dot(A)  # sum(normal * normal = subnormal) = subnormal
-            B.dot(C)  # sum(subnormal * 1.0 = subnormal) = subnormal
+            A.dot(A)
+            B.dot(C)
         if time() > t0 + min_t:
             break
+
+    set_flags(**orig_flags)
+
     return (time() - t0) / (i * repeat)
 
 
