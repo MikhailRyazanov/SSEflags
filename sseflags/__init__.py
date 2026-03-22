@@ -5,7 +5,7 @@ try:
 except ImportError:
     _ext = False
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 Flags = TypedDict('Flags', {'daz': bool | None, 'ftz': bool | None},
                   total=False)
