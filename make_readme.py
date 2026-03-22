@@ -90,6 +90,16 @@ module only reports that it has no effect.
 
 {doc(run_flags)}
 ```
+
+## Installation
+
+Compiled wheels for Linux, macOS and Windows can be installed
+[from PyPI](https://pypi.org/project/sseflags).
+They use [“Stable ABI”](https://docs.python.org/3/c-api/stable.html#stable-abi)
+that should be compatible with all Python versions ⩾3.10. For portability, a
+“universal wheel” is also available. It does not contain the Cython extension,
+and thus has no effect on computations, but can be installed on unsupported
+systems.
 """
 
 with open('README.md', 'w') as f:

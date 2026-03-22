@@ -151,3 +151,13 @@ run_flags(flags, repeat=100, min_t=1.0)
     time : float
         average time per iteration in seconds
 ```
+
+## Installation
+
+Compiled wheels for Linux, macOS and Windows can be installed
+[from PyPI](https://pypi.org/project/sseflags).
+They use [“Stable ABI”](https://docs.python.org/3/c-api/stable.html#stable-abi)
+that should be compatible with all Python versions ⩾3.10. For portability, a
+“universal wheel” is also available. It does not contain the Cython extension,
+and thus has no effect on computations, but can be installed on unsupported
+systems.
