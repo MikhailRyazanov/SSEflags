@@ -43,7 +43,7 @@ def run(repeat=100, min_t=1.0, verbose=True):
         vprint(f'Done {get_flags()}.')
 
     set_flags(**flags)
-    vprint('Restored: {get_flags()}.\n')
+    vprint(f'Restored: {get_flags()}.\n')
 
     if max(res.values()) < 100e-6:
         prefix = 'micro'
