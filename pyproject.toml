@@ -37,5 +37,5 @@ environment.PIP_PROGRESS_BAR = "off"
 test-requires = "abi3audit"
 test-command = [
   "python -m abi3audit -v --summary {wheel}",
-  "pyhton -m sseflags.benchmark",
+  "python -m sseflags.benchmark",
 ]

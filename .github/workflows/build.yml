@@ -28,6 +28,7 @@ jobs:
 
   wheels:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-26-intel, windows-latest]
     runs-on: ${{ matrix.os }}
