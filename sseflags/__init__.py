@@ -1,7 +1,8 @@
 from typing import TypedDict
 try:
-    from ._lib import _get_daz, _get_ftz, _set_daz, _set_ftz
+    from ._lib import _has_daz, _get_daz, _get_ftz, _set_daz, _set_ftz
     _ext = True
+    _use_daz = _has_daz()
 except ImportError:
     _ext = False
 
@@ -42,6 +43,9 @@ def set_flags(daz: bool | None = None, ftz: bool | None = None,
     SSE and AVX floating-point calculations, which can be useful for Intel CPUs
     that work very slowly with subnormal (denormal) numbers.
 
+    On AArch64 (ARM64) CPUs, both DAZ and FTZ are represented by the FZ flag,
+    thus the daz and ftz parameters must be equal (or daz omitted).
+
     On unsupported architectures, or if the underlying Cython extension was not
     built, this function only reports that it has no effect. The availability
     can be checked by calling set_flags() without arguments.
@@ -62,9 +66,14 @@ def set_flags(daz: bool | None = None, ftz: bool | None = None,
     Returns
     -------
     implemented : bool
-        True if this operation is implemented, False if not
+        True if this operation is implemented and supported, False if not
     """
     if _ext:
+        if not _use_daz and None not in [daz, ftz] and daz != ftz:
+            if verbose:
+                print('Set the DAZ and FTZ flags separately is not supported '
+                      'for this CPU.')
+            return False
         if daz is not None:
             _set_daz(daz)
         if ftz is not None:
