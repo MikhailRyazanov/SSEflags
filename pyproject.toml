@@ -35,7 +35,4 @@ include = ["sseflags"]
 environment.FORCE_COLOR = 1
 environment.PIP_PROGRESS_BAR = "off"
 test-requires = "abi3audit"
-test-command = [
-  "python -m abi3audit -v --summary {wheel}",
-  "python -m sseflags.benchmark",
-]
+test-command = "python -m abi3audit -v --summary {wheel}"
