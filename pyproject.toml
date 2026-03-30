@@ -42,3 +42,4 @@ test-command = [
 
 [tool.cibuildwheel.linux]
 archs = ["auto32", "auto64"]
+skip = "*_armv7l"
