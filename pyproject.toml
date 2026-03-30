@@ -36,6 +36,7 @@ environment.FORCE_COLOR = 1
 environment.PIP_PROGRESS_BAR = "off"
 test-requires = "abi3audit"
 test-command = [
+  "echo ::endgroup::",
   "python -m abi3audit -v --summary {wheel}",
   "python -m sseflags.test"
 ]
