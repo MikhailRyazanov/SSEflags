@@ -35,4 +35,10 @@ include = ["sseflags"]
 environment.FORCE_COLOR = 1
 environment.PIP_PROGRESS_BAR = "off"
 test-requires = "abi3audit"
-test-command = "python -m abi3audit -v --summary {wheel}"
+test-command = [
+  "python -m abi3audit -v --summary {wheel}",
+  "python -m sseflags.test"
+]
+
+[tool.cibuildwheel.linux]
+archs = ["auto32", "auto64"]
