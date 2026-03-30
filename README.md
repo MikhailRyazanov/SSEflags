@@ -189,6 +189,19 @@ run_flags(
         average time per iteration in seconds; None if the flags cannot be set
 ```
 
+### ``sseflags.test`` submodule
+
+```
+run() -> None
+    Basic tests to check the DAZ and FTZ flags and their effect on operations
+    involving subnormal numbers.
+
+    n is the smallest normal number, s = n / 2 is a subnormal number;
+    the operation s * 2 should produce a normal number (or zero with DAZ),
+    the operation n / 2 should produce a subnormal number (or zero with FTZ).
+```
+
+
 ## Installation
 
 Compiled wheels for Linux, macOS and Windows can be installed
