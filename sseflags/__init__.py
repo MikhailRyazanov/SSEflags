@@ -44,7 +44,7 @@ def set_flags(daz: bool | None = None, ftz: bool | None = None,
     that work very slowly with subnormal (denormal) numbers.
 
     On AArch64 (ARM64) CPUs, both DAZ and FTZ are represented by the FZ flag,
-    thus the daz and ftz parameters must be equal (or daz omitted).
+    thus the daz and ftz parameters must be equal.
 
     On unsupported architectures, or if the underlying Cython extension was not
     built, this function only reports that it has no effect. The availability
@@ -69,10 +69,10 @@ def set_flags(daz: bool | None = None, ftz: bool | None = None,
         True if this operation is implemented and supported, False if not
     """
     if _ext:
-        if not _use_daz and None not in [daz, ftz] and daz != ftz:
+        if not _use_daz and daz != ftz:
             if verbose:
-                print('Set the DAZ and FTZ flags separately is not supported '
-                      'for this CPU.')
+                print('Setting the DAZ and FTZ flags independently is not '
+                      'supported for this CPU.')
             return False
         if daz is not None:
             _set_daz(daz)

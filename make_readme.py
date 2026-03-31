@@ -80,9 +80,11 @@ Therefore, enabling it with the same interface is implemented here for
 compatibility. ARM CPUs with the
 [FEAT_AFP feature](
 https://developer.arm.com/documentation/ddi0487/maa/-Part-A-Arm-Architecture-Introduction-and-Overview/-Chapter-A2-A-profile-Architecture-Extensions/-A2-2-Armv8-A-architecture-extensions/-A2-2-8-The-Armv8-7-architecture-extension#feat_feat_afp)
-(for example, Apple M3 but not M1) also support “alternate floating-point behavior”
+(for example, Apple M3 but not M1) also support “alternate floating-point
+behavior”
 [providing control](https://developer.arm.com/documentation/ddi0487/maa/-Part-A-Arm-Architecture-Introduction-and-Overview/-Chapter-A1-Introduction-to-the-Arm-Architecture/-A1-5-Floating-point-support/-A1-5-6-Flushing-denormalized-numbers-to-zero)
-equivalent to separate DAZ and FTZ flags; however, this is not implemented yet (mostly due to the lack of testing).
+equivalent to separate DAZ and FTZ flags; however, this is not implemented yet
+(mostly due to the lack of testing).
 
 On other architectures, or if the underlying Cython extension is not built, the
 module only reports that it has no effect.
