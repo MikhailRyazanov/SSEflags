@@ -3,6 +3,7 @@ from pydoc import plaintext, render_doc
 
 from sseflags import get_flags, set_flags, Flags
 from sseflags.benchmark import run, run_flags
+from sseflags.test import run as test_run
 
 
 def doc(obj):
@@ -96,6 +97,13 @@ type Flags = {Flags.__annotations__}
 
 {doc(run_flags)}
 ```
+
+### ``sseflags.test`` submodule
+
+```
+{doc(test_run)}
+```
+
 
 ## Installation
 

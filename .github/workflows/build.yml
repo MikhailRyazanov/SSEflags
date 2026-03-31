@@ -21,6 +21,12 @@ jobs:
       run: python -m build --sdist
     - name: Create universal wheel (no Cython)
       run: sseflags=none python -m build --wheel
+    - name: Test universal wheel
+      run: |
+        python -m pip install numpy
+        python -m pip install dist/*.whl
+        cd ..
+        python -m sseflags.benchmark
     - uses: actions/upload-artifact@v6
       with:
         name: noarch(${{ github.ref_name }})
