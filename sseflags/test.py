@@ -12,8 +12,7 @@ def run() -> None:
     the operation s * 2 should produce a normal number (or zero with DAZ),
     the operation n / 2 should produce a subnormal number (or zero with FTZ).
     """
-    if not set_flags(daz=False, ftz=False):
-        print('Setting DAZ/FTZ is not implemented.')
+    if not set_flags(daz=False, ftz=False, verbose=True):
         return
 
     n = float_info.min
