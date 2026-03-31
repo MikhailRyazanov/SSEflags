@@ -40,3 +40,7 @@ test-command = [
   "python -m abi3audit -v --summary {wheel}",
   "python -m sseflags.test"
 ]
+
+[tool.cibuildwheel.linux]
+archs = ["auto32", "auto64"]
+skip = "*_armv7l"
