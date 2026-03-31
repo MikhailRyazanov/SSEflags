@@ -57,6 +57,19 @@ difference):
     ========================
 ```
 
+AArch64 (ARM64) has the
+[FZ flag](https://developer.arm.com/documentation/ddi0601/2025-12/AArch64-Registers/FPCR--Floating-point-Control-Register#fieldset_0-24_24)
+to treat subnormal numbers as zeros similarly to both DAZ and FTZ together.
+Therefore, enabling it with the same interface is implemented here for
+compatibility. ARM CPUs with the
+[FEAT_AFP feature](
+https://developer.arm.com/documentation/ddi0487/maa/-Part-A-Arm-Architecture-Introduction-and-Overview/-Chapter-A2-A-profile-Architecture-Extensions/-A2-2-Armv8-A-architecture-extensions/-A2-2-8-The-Armv8-7-architecture-extension#feat_feat_afp)
+(for example, Apple M3 but not M1) also support “alternate floating-point
+behavior”
+[providing control](https://developer.arm.com/documentation/ddi0487/maa/-Part-A-Arm-Architecture-Introduction-and-Overview/-Chapter-A1-Introduction-to-the-Arm-Architecture/-A1-5-Floating-point-support/-A1-5-6-Flushing-denormalized-numbers-to-zero)
+equivalent to separate DAZ and FTZ flags; however, this is not implemented yet
+(mostly due to the lack of testing).
+
 On other architectures, or if the underlying Cython extension is not built, the
 module only reports that it has no effect.
 
@@ -93,6 +106,9 @@ set_flags(
     SSE and AVX floating-point calculations, which can be useful for Intel CPUs
     that work very slowly with subnormal (denormal) numbers.
 
+    On AArch64 (ARM64) CPUs, both DAZ and FTZ are represented by the FZ flag,
+    thus the daz and ftz parameters must be equal.
+
     On unsupported architectures, or if the underlying Cython extension was not
     built, this function only reports that it has no effect. The availability
     can be checked by calling set_flags() without arguments.
@@ -113,7 +129,7 @@ set_flags(
     Returns
     -------
     implemented : bool
-        True if this operation is implemented, False if not
+        True if this operation is implemented and supported, False if not
 ```
 
 ### ``sseflags.benchmark`` submodule
@@ -139,7 +155,7 @@ run_flags(
     flags: Union[sseflags.Flags, Literal['default', 'normal']],
     repeat: int = 100,
     min_t: float = 1.0
-) -> float
+) -> float | None
     Set the DAZ and FTZ flags to given states and run a benchmark of NumPy
     matrix multiplication. Each iteration involves multiplication of normal
     numbers that would produce subnormal numbers and multiplication of
@@ -171,8 +187,8 @@ run_flags(
 
     Returns
     -------
-    time : float
-        average time per iteration in seconds
+    time : float or None
+        average time per iteration in seconds; None if the flags cannot be set
 ```
 
 ### ``sseflags.test`` submodule

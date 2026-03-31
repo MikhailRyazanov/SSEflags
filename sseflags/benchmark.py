@@ -29,7 +29,7 @@ def run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None:
             print(*args, **kwargs, flush=True)
 
     ResKey = str | tuple[bool, bool]
-    res: dict[ResKey, float] = {}
+    res: dict[ResKey, float | None] = {}
 
     vprint('Running normal...', end='')
     res['normal'] = run_flags('normal', repeat=repeat, min_t=min_t)
@@ -46,11 +46,12 @@ def run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None:
                          (True, False), (True, True)]:
             flags: Flags = {'daz': daz, 'ftz': ftz}
             vprint(f'Running {flags}...', end='')
-            res[daz, ftz] = run_flags(flags, repeat=repeat, min_t=min_t)
-            vprint(' done.')
+            t = run_flags(flags, repeat=repeat, min_t=min_t)
+            res[daz, ftz] = t
+            vprint(' skipped.' if t is None else ' done.')
     vprint('')
 
-    if max(res.values()) < 100e-6:
+    if max(t for t in res.values() if t is not None) < 100e-6:
         prefix = 'micro'
         factor = 1e6
     else:
@@ -58,7 +59,10 @@ def run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None:
         factor = 1e3
 
     def fmt(key: ResKey) -> str:
-        return f'{res[key] * factor:6.3f}'
+        t = res[key]
+        if t is None:
+            return ' n.a. '
+        return f'{t * factor:6.3f}'
 
     print(f'Times in {prefix}seconds:')
     print(f'normal    {fmt("normal")}')
@@ -73,7 +77,7 @@ def run(repeat: int = 100, min_t: float = 1.0, verbose: bool = True) -> None:
 
 
 def run_flags(flags: Flags | Literal['default',  'normal'],
-              repeat: int = 100, min_t: float = 1.0) -> float:
+              repeat: int = 100, min_t: float = 1.0) -> float | None:
     """
     Set the DAZ and FTZ flags to given states and run a benchmark of NumPy
     matrix multiplication. Each iteration involves multiplication of normal
@@ -106,8 +110,8 @@ def run_flags(flags: Flags | Literal['default',  'normal'],
 
     Returns
     -------
-    time : float
-        average time per iteration in seconds
+    time : float or None
+        average time per iteration in seconds; None if the flags cannot be set
     """
     orig_flags = get_flags()
 
@@ -130,7 +134,9 @@ def run_flags(flags: Flags | Literal['default',  'normal'],
         # B.dot(C) would be sum(subnormal * 1.0 = subnormal) = subnormal
         B = 2.0**(float_info.min_exp - xx)
         if flags != 'default':
-            set_flags(**flags)
+            if not set_flags(**flags):
+                set_flags(**orig_flags)
+                return None
     C = np.ones_like(B)
 
     t0 = time()
