@@ -8,7 +8,6 @@ env:
 
 jobs:
   noarch:
-    if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -34,7 +33,6 @@ jobs:
         path: ./dist/*
 
   wheels:
-    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -59,7 +57,7 @@ jobs:
         path: ./wheels/*
 
   testAFP:
-    #needs: wheels
+    needs: wheels
     runs-on: ubuntu-24.04-arm
     steps:
     - name: Set up Python
