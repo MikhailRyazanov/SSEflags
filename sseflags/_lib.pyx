@@ -19,33 +19,78 @@ cdef extern from *:
             #include <arm_acle.h>
             #define ARM64_FPCR "FPCR"
         #endif
-        #define MASK_FZ ((uint64_t)1 << 24)
+
+        #define MASK_FZ  ((uint64_t)1 << 24)
+        #define MASK_AH  ((uint64_t)1 <<  1)
+        #define MASK_FIZ ((uint64_t)1 <<  0)
+
+        #define GET_FLAGS uint64_t fpcr = __arm_rsr64(ARM64_FPCR);\
+                          bool fz  = fpcr & MASK_FZ,\
+                               ah  = fpcr & MASK_AH,\
+                               fiz = fpcr & MASK_FIZ;
+
+        #define AFP_DAZ (fiz || (!ah && fz))
+
+        #define SET_FLAGS fpcr &= ~(MASK_FZ | MASK_AH | MASK_FIZ);\
+                          if (fz)  fpcr |= MASK_FZ;\
+                          if (ah)  fpcr |= MASK_AH;\
+                          if (fiz) fpcr |= MASK_FIZ;\
+                          __arm_wsr64(ARM64_FPCR, fpcr);
+
+        bool feat_afp, keep_ah;
 
         bool c_has_daz(void) {
-            // by default, FZ means both DAZ and FTZ;
-            // separate handling (FIZ as DAZ with AH=1) requires FEAT_AFP and
-            // is not implemented yet
-            return false;
+            uint64_t fpcr = __arm_rsr64(ARM64_FPCR);
+            // AH already set?
+            if (fpcr & MASK_AH) {
+                keep_ah = true;
+                return feat_afp = true;
+            }
+            // AH can be set?
+            __arm_wsr64(ARM64_FPCR, fpcr | MASK_AH);
+            if (__arm_rsr64(ARM64_FPCR) & MASK_AH) {
+                __arm_wsr64(ARM64_FPCR, fpcr);
+                keep_ah = false;
+                return feat_afp = true;
+            }
+            return feat_afp = false;
+        }
+
+        void c_set_daz(bool on) {
+            if (!feat_afp)
+                return;
+            GET_FLAGS;
+            if (keep_ah && ah) {
+                fiz = on;
+            } else {
+                ah = on != fz;
+                fiz = on > fz;
+            }
+            SET_FLAGS;
         }
 
         void c_set_ftz(bool on) {
-            uint64_t fpcr = __arm_rsr64(ARM64_FPCR);
-            fpcr &= ~MASK_FZ;
-            if (on)
-                fpcr |= MASK_FZ;
-            __arm_wsr64(ARM64_FPCR, fpcr);
+            GET_FLAGS;
+            if (feat_afp) {
+                if (keep_ah)
+                    ah = ah || on;
+                else {
+                    bool daz = AFP_DAZ;
+                    ah = on != daz;
+                    fiz = on < daz;
+                }
+            }
+            fz = on;
+            SET_FLAGS;
+        }
+
+        bool c_get_daz(void) {
+            GET_FLAGS;
+            return feat_afp ? AFP_DAZ : fz;
         }
 
         bool c_get_ftz(void) {
             return __arm_rsr64(ARM64_FPCR) & MASK_FZ;
-        }
-
-        void c_set_daz(bool on) {
-            // not implemented yet
-        }
-
-        bool c_get_daz(void) {
-            return c_get_ftz();
         }
     #else // x86/AMD64
         #include <pmmintrin.h>
@@ -82,11 +127,11 @@ cdef extern from *:
     bool c_get_ftz() nogil
 
 
+# Initialization
+_use_daz = c_has_daz()
+
+
 # Python wrappers for the C functions above
-
-cpdef bool _has_daz() noexcept nogil:
-    return c_has_daz()
-
 
 cpdef void _set_daz(bool on) noexcept nogil:
     c_set_daz(on)
