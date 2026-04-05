@@ -8,6 +8,7 @@ env:
 
 jobs:
   noarch:
+    if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -33,6 +34,7 @@ jobs:
         path: ./dist/*
 
   wheels:
+    if: false
     strategy:
       fail-fast: false
       matrix:
