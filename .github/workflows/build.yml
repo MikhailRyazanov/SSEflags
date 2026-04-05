@@ -67,6 +67,8 @@ jobs:
       with:
         python-version: '>=3.10'
     - name: Download wheel
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         gh run download -R '${{ github.repository }}' \
                         -n 'wheels(${{ github.ref_name }})ubuntu-24.04-arm'
