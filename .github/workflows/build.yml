@@ -55,3 +55,28 @@ jobs:
       with:
         name: wheels(${{ github.ref_name }})${{ matrix.os }}
         path: ./wheels/*
+
+  testAFP:
+    needs: wheels
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '>=3.10'
+    - name: Download wheel
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh run download -R '${{ github.repository }}' \
+                        -n 'wheels(${{ github.ref_name }})ubuntu-24.04-arm'
+        ls -Al
+    - name: Install wheel
+      run: python -m pip install *manylinux*.whl
+    - name: Install QEMU 10.2
+      # ubuntu-24.04 has only qemu-user_1:8.2.2 without FEAT_AFP
+      run: |
+        wget --no-verbose https://ports.ubuntu.com/pool/universe/q/qemu/qemu-user_10.2.1+ds-1ubuntu3_arm64.deb
+        sudo dpkg --ignore-depends=ubuntu-virt -i *.deb
+    - name: Run test in QEMU
+      run: qemu-aarch64 -cpu max $(which python) -m sseflags.test
