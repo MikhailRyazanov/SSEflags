@@ -63,7 +63,7 @@ cdef extern from *:
             if (keep_ah && ah) {
                 fiz = on;
             } else {
-                ah = on != fz;
+                ah = on < fz;
                 fiz = on > fz;
             }
             SET_FLAGS;
@@ -71,14 +71,10 @@ cdef extern from *:
 
         void c_set_ftz(bool on) {
             GET_FLAGS;
-            if (feat_afp) {
-                if (keep_ah)
-                    ah = ah || on;
-                else {
-                    bool daz = AFP_DAZ;
-                    ah = on != daz;
-                    fiz = on < daz;
-                }
+            if (feat_afp && !(keep_ah && ah)) {
+                bool daz = AFP_DAZ;
+                ah = daz < on;
+                fiz = daz > on;
             }
             fz = on;
             SET_FLAGS;
