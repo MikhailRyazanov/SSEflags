@@ -6,12 +6,13 @@ from setuptools import setup, Extension
 sys.path.insert(0, '')  # include CWD (missing in build isolation)
 from sseflags import __version__
 
+extra_link_args = None
 if sys.platform == 'win32':  # for MSVC
     extra_compile_args = ['/Os']
-    extra_link_args = None
 else:  # for GCC and Clang
     extra_compile_args = ['-Os', '-g0']
-    extra_link_args = ['-s', '-Wl,-z,norelro', '-Wl,-z,noseparate-code']
+    if sys.platform != 'darwin':  # ld on macOS does not support these
+        extra_link_args = ['-s', '-Wl,-z,norelro', '-Wl,-z,noseparate-code']
 ext_modules = [
     # ("Path" below is a workaround for Setuptools bug on Windows,
     #  see https://github.com/pypa/setuptools/issues/5093)
