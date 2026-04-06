@@ -9,7 +9,7 @@ from sseflags import __version__
 if sys.platform == 'win32':  # for MSVC
     extra_compile_args = ['/Os']
 else:  # for GCC and Clang
-    extra_compile_args = ['-Os', '-g0']
+    extra_compile_args = ['-Os', '-g0', '-s', '-Wl,-z,norelro']
 ext_modules = [
     # ("Path" below is a workaround for Setuptools bug on Windows,
     #  see https://github.com/pypa/setuptools/issues/5093)
