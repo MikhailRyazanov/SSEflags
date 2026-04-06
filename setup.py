@@ -8,13 +8,16 @@ from sseflags import __version__
 
 if sys.platform == 'win32':  # for MSVC
     extra_compile_args = ['/Os']
+    extra_link_args = None
 else:  # for GCC and Clang
-    extra_compile_args = ['-Os', '-g0', '-s', '-Wl,-z,norelro']
+    extra_compile_args = ['-Os', '-g0']
+    extra_link_args = ['-s', '-Wl,-z,norelro', '-Wl,-z,noseparate-code']
 ext_modules = [
     # ("Path" below is a workaround for Setuptools bug on Windows,
     #  see https://github.com/pypa/setuptools/issues/5093)
     Extension('sseflags._lib', [Path('sseflags/_lib.pyx')],
               extra_compile_args=extra_compile_args,
+              extra_link_args=extra_link_args,
               define_macros=[('Py_LIMITED_API', 0x030A0000)],  # 0x0B = 11
               py_limited_api=True)
 ]
